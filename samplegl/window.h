@@ -1,7 +1,6 @@
 #pragma once
 #ifndef WINDOW_H
 #define WINDOW_H
-
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
@@ -42,11 +41,11 @@ public:
 		}
 		return 0;
 	}
-	static unsigned int GetWidth() {
+	inline static unsigned int GetWidth() {
 		glfwGetWindowSize(window, &SCR_WIDTH, &SCR_HEIGHT);
 		return SCR_WIDTH;
 	}
-	static unsigned int GetHeight() {
+	inline static unsigned int GetHeight() {
 		glfwGetWindowSize(window, &SCR_WIDTH, &SCR_HEIGHT);
 		return SCR_HEIGHT;
 	}
@@ -60,16 +59,16 @@ public:
 	inline static bool isClose() {
 		return glfwWindowShouldClose(window);
 	}
-	static void Destroy() {
+	inline static void Destroy() {
 		glfwDestroyWindow(window);
 	}
-	static void Close() {
+	inline static void Close() {
 		glfwSetWindowShouldClose(window, true);
 	}
 	inline static GLFWwindow* GetWindow() {
 		return window;
 	}
-	static void Render() {
+	inline static void Render() {
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}

@@ -10,8 +10,12 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 #include "mesh.h"
-#include "shader_s.h"
+#include "shader.h"
+#include "RenderEngine.h"
 
 #include <string>
 #include <fstream>
@@ -19,6 +23,9 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include "cscene.h"
+
+
 using namespace std;
 
 unsigned int TextureFromFile(const char *path, const string &directory, bool gamma = false);
@@ -40,10 +47,18 @@ public:
 	}
 
 	// draws the model, and thus all its meshes
-	void Draw(Shader shader)
+	/*void Draw()
 	{
+		RenderEngine::currentShader->setMat4("MVP",
+			((parent->ModelTransform)*GetTransform())*
+			RenderEngine::GetCamera()->GetViewMatrix()*
+			(glm::perspective(glm::radians(RenderEngine::GetCamera()->Zoom), ((float)Window::GetWidth() / (float)Window::GetHeight()), 0.1f, 100.0f))
+		);
 		for (unsigned int i = 0; i < meshes.size(); i++)
-			meshes[i].Draw(shader);
+			meshes[i].Draw(*RenderEngine::currentShader);
+	}*/
+	vector<Mesh> GetMeshes() {
+		return meshes;
 	}
 
 private:

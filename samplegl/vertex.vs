@@ -11,17 +11,17 @@ out    vec3 TangentLightPos;
 out    vec3 TangentViewPos;
 out    vec3 TangentFragPos;
 
+uniform vec3 viewPos;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
 uniform vec3 lightPos;
-uniform vec3 viewPos;
 
 void main()
-{
-    FragPos = vec3(model * vec4(aPos, 1.0));   
+{ 
+	FragPos = vec3(model * vec4(aPos, 1.0));   
     TexCoords = aTexCoords;
     
     mat3 normalMatrix = transpose(inverse(mat3(model)));

@@ -1,7 +1,9 @@
+#pragma once
+#include "RenderEngine.h"
 #include "window.h"
 #include "Game.h"
 #include "Input.h"
-#include "RenderEngine.h"
+
 
 GLFWwindow* Window::window;
 int Window::SCR_WIDTH;
@@ -14,7 +16,7 @@ public:
 	EngineCore(int width,int height,const char*title,Game*game) {
 		Window::Create(width,height,title);
 		RenderEngine::Init();
-		this->game = game;
+		this->game = *game;
 		IsRunning = true;
 		Run();
 	};
@@ -22,14 +24,15 @@ public:
 		Window::Destroy();
 	} 
 	void Run() {
+		game.Init();
 		while (IsRunning) {
 			if (Window::isClose()) {
 				Stop();
 				return;
 			}
 			Input::Update();
-			game->Input();
-			game->Update();
+			game.Input();
+			game.Update();
 			Render();
 		}
 	}
@@ -46,12 +49,13 @@ public:
 		Run();
 	}
 private:
-	Game*game;
+	Game game;
 	bool IsRunning;
 
 	void Render() {
 		RenderEngine::Clear();
-		game->Render();
+		game.Render();
+		RenderEngine::Render();
 		Window::Render();
 	}
 };
