@@ -4,7 +4,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
-//#include <stdlib.h>
 
 class Window {
 private:
@@ -13,7 +12,7 @@ private:
 	static int SCR_HEIGHT;
 	static GLFWwindow* window;
 public:
-	static int Create(int scr_width, int scr_height, const char * title)
+	static int Create(int scr_width, int scr_height, const char * title, bool fullscreen=false)
 	{
 		SCR_HEIGHT = scr_height;
 		SCR_WIDTH = scr_width;
@@ -27,7 +26,7 @@ public:
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-		window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, title, NULL, NULL);
+		window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, title, fullscreen ? glfwGetPrimaryMonitor() : NULL, NULL);
 		if (window == NULL)
 		{
 			std::cout << "Failed to create GLFW window" << std::endl;

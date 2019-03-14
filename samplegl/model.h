@@ -45,18 +45,6 @@ public:
 	{
 		loadModel(path);
 	}
-
-	// draws the model, and thus all its meshes
-	/*void Draw()
-	{
-		RenderEngine::currentShader->setMat4("MVP",
-			((parent->ModelTransform)*GetTransform())*
-			RenderEngine::GetCamera()->GetViewMatrix()*
-			(glm::perspective(glm::radians(RenderEngine::GetCamera()->Zoom), ((float)Window::GetWidth() / (float)Window::GetHeight()), 0.1f, 100.0f))
-		);
-		for (unsigned int i = 0; i < meshes.size(); i++)
-			meshes[i].Draw(*RenderEngine::currentShader);
-	}*/
 	vector<Mesh> GetMeshes() {
 		return meshes;
 	}
@@ -140,7 +128,7 @@ private:
 			vector.y = mesh->mTangents[i].y;
 			vector.z = mesh->mTangents[i].z;
 			vertex.Tangent = vector;
-			// bitangent
+			//// bitangent
 			vector.x = mesh->mBitangents[i].x;
 			vector.y = mesh->mBitangents[i].y;
 			vector.z = mesh->mBitangents[i].z;

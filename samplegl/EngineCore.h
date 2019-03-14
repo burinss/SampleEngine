@@ -3,6 +3,7 @@
 #include "window.h"
 #include "Game.h"
 #include "Input.h"
+#include <btBulletDynamicsCommon.h>
 
 
 GLFWwindow* Window::window;
@@ -15,7 +16,8 @@ class EngineCore {
 public:
 	EngineCore(int width,int height,const char*title,Game*game) {
 		Window::Create(width,height,title);
-		RenderEngine::Init();
+		sceneRoot= new CSceneNode;
+		RenderEngine::Init(sceneRoot);
 		this->game = *game;
 		IsRunning = true;
 		Run();
@@ -49,6 +51,7 @@ public:
 		Run();
 	}
 private:
+	CSceneNode * sceneRoot;
 	Game game;
 	bool IsRunning;
 

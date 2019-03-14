@@ -19,7 +19,7 @@ public:
 		delete rotation;
 		delete scale;
 	}
-	glm::mat4 GetTransform() {
+	inline glm::mat4 GetTransform() {
 		glm::mat4 translationMatrix;
 		glm::mat4 rotationMatrix;
 		glm::mat4 scaleMatrix;
@@ -29,27 +29,27 @@ public:
 		rotationMatrix = glm::rotate(rotationMatrix, rotation->x, glm::vec3(1.0f, 0.0f, 0.0f));
 		rotationMatrix = glm::rotate(rotationMatrix, rotation->y, glm::vec3(0.0f, 1.0f, 0.0f));
 		rotationMatrix = glm::rotate(rotationMatrix, rotation->z, glm::vec3(0.0f, 0.0f, 1.0f));
-		ModelTransform = translationMatrix * rotationMatrix* scaleMatrix;
+		ModelTransform = scaleMatrix * rotationMatrix * translationMatrix;
 		return ModelTransform;
 	}
-	glm::vec3*GetTranslate() {
+	inline glm::vec3*GetTranslate() {
 		return translation;
 	}
-	void SetTranslation (glm::vec3*transform) {
+	inline void SetTranslation (glm::vec3*transform) {
 		delete this->translation;
 		this->translation = transform;
 	}
-	glm::vec3*GetRotation() {
+	inline glm::vec3*GetRotation() {
 		return rotation;
 	}
-	void SetRotation(glm::vec3*rotation) {
+	inline void SetRotation(glm::vec3 *rotation) {
 		delete this->rotation;
 		this->rotation = rotation;
 	}
-	glm::vec3*GetScale() {
+	inline glm::vec3*GetScale() {
 		return scale;
 	}
-	void SetScale(glm::vec3*scale) {
+	inline void SetScale(glm::vec3*scale) {
 		delete this->scale;
 		this->scale = scale;
 	}

@@ -2,13 +2,9 @@
 #include <vector>
 #include <list>
 
-//#include <glm/glm.hpp>
-//#include <glm/gtc/matrix_transform.hpp>
-//#include <glm/gtc/type_ptr.hpp>
 #include "mesh.h"
 #include "transform.h"
 #include "shader.h"
-#include <iostream>
 
 class CSceneNode : public Transform
 {
@@ -65,7 +61,7 @@ public:
 	CGeometryNode(std::vector<Mesh> meshes) {
 		//this->meshes = meshes;
 		this->meshes = meshes;
-		SetTranslation(new glm::vec3(0.0f, -1.75f, 0.0f));
+		SetTranslation(new glm::vec3(0.0f, 0.0f, 0.0f));
 		SetScale(new glm::vec3(0.2f, 0.2f, 0.2f));
 		
 	}
@@ -76,7 +72,7 @@ public:
 		CSceneNode::Update(dT);
 	}
 	void Draw(Shader*shader) {
-		glm::mat4 Model= /*parent->ModelTransform**/GetTransform();
+		glm::mat4 Model= parent->ModelTransform*GetTransform();
 		
 		shader->setMat4("model",Model);
 
@@ -86,3 +82,4 @@ public:
 private:
 	std::vector<Mesh> meshes;
 };
+

@@ -14,7 +14,6 @@ private:
 	static Camera*currentCamera;
 public:
 	static void SetCamera(Camera*NewCamera) {
-		/*if (currentCamera)*/
 			delete currentCamera;
 		currentCamera = NewCamera;
 	}
@@ -22,27 +21,29 @@ public:
 		return currentCamera;
 	}
 	static void AddObj(CSceneNode*node) {
-		scene.AddChild(node);
+		scene->AddChild(node);
 	}
 	static void Render() {
 		currentShader->setVec3("viewPos",currentCamera->Position);
-		currentShader->setVec3("lightPos", glm::vec3(0.0f,0.0f,5.0f));
+		currentShader->setVec3("lightPos", glm::vec3(0.0f,3.0f,3.0f));
+		//currentShader->setVec3("lightColor", glm::vec3(1.0f, 0.0f, 0.0f));
 		currentShader->setMat4("view", currentCamera->GetViewMatrix());
 		currentShader->setMat4("projection", glm::perspective(glm::radians(currentCamera->Zoom), (float)Window::GetWidth() / (float)Window::GetHeight(), 0.1f, 100.0f));
 
-		scene.Draw(currentShader);
+		scene->Draw(currentShader);
 	}
 	inline static void Clear() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
-	static void Init() {
+	static void Init(CSceneNode*scenePointer) {
+		scene = scenePointer;
 		currentShader = new Shader("vertex.vs","fragment.fs");
 		currentShader->use();
 		glClearColor(0.01f, 0.01f, 0.01f, 1.0f);
 		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_CULL_FACE);
+		/*glEnable(GL_CULL_FACE);
 		glFrontFace(GL_CW);
-		glCullFace(GL_FRONT);
+		glCullFace(GL_FRONT);*/
 
 		glEnable(GL_FRAMEBUFFER_SRGB);
 	}
@@ -51,9 +52,9 @@ public:
 	}
 public:
 	static Shader*currentShader;
-	static CSceneNode scene;
+	static CSceneNode*scene;
 };
-CSceneNode RenderEngine::scene;
+CSceneNode*RenderEngine::scene;
 Camera*RenderEngine::currentCamera;
 Shader*RenderEngine::currentShader;
 #endif
