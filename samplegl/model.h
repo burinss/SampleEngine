@@ -5,11 +5,13 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-
+#include "transform.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -32,6 +34,8 @@ unsigned int TextureFromFile(const char *path, const string &directory, bool gam
 
 class Model
 {
+private:
+	CSceneNode*newNode;
 public:
 	/*  Model Data */
 	vector<Texture> textures_loaded;	// stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
@@ -41,14 +45,19 @@ public:
 
 	/*  Functions   */
 	// constructor, expects a filepath to a 3D model.
-	Model(string const &path, bool gamma = false) : gammaCorrection(gamma)
+	Model(string const &path,string name="Mesh", bool gamma = false) : gammaCorrection(gamma)
 	{
+		//newNode=std::make_shared<CSceneNode>();
 		loadModel(path);
 	}
-	vector<Mesh> GetMeshes() {
-		return meshes;
+	~Model() {
+		
+		//newNode->Destroy();
+		//delete newNode;
 	}
-
+	CSceneNode* getNode() {
+		return newNode;
+	}
 private:
 	/*  Functions   */
 	// loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
@@ -56,46 +65,81 @@ private:
 	{
 		// read file via ASSIMP
 		Assimp::Importer importer;
-		const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+		const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace );
 		// check for errors
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
 		{
 			cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
 			return;
 		}
+		cout << "Loading:" << path << endl;
+		cout << "Lights:" << scene->mNumLights <<endl;
+		cout << "Cameras:" << scene->mNumCameras<< endl;
+		cout << "Animations:" << scene->mNumCameras << endl;
 		// retrieve the directory path of the filepath
 		directory = path.substr(0, path.find_last_of('/'));
 
+		
 		// process ASSIMP's root node recursively
-		processNode(scene->mRootNode, scene);
+		newNode=processNode(scene->mRootNode, scene,nullptr);
+		newNode->name = scene->mRootNode->mName.C_Str();
 	}
 
 	// processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
-	void processNode(aiNode *node, const aiScene *scene)
-	{
+	CSceneNode * processNode(aiNode *node, const aiScene *scene,CSceneNode*parent)
+	{	
+		CSceneNode*childNode = new CSceneNode;
+		childNode->parent = parent;
+		childNode->name = node->mName.C_Str();
+		cout <<"Processing"<< node->mName.C_Str() << endl;
 		// process each mesh located at the current node
 		for (unsigned int i = 0; i < node->mNumMeshes; i++)
 		{
 			// the node object only contains indices to index the actual objects in the scene. 
 			// the scene contains all the data, node is just to keep stuff organized (like relations between nodes).
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-			meshes.push_back(processMesh(mesh, scene));
-		}
+			mesh->mName = childNode->name;
+			//meshes.push_back(processMesh(mesh, scene));
+			
+			CSceneNode*nodeptr = childNode->AddChild(processMesh(mesh, scene));
+			//nodeptr->name<<endl;
+			/*glm::vec3 translate, rotation, scale, skew;
+			glm::vec4 persp;
+			glm::mat4 matrix(Transform::aiMatrix4x4ToGlm(&node->mTransformation));
+			glm::quat rotatonquat;
+			matrix = glm::transpose(matrix);
+			glm::decompose(matrix, scale, rotatonquat,translate,skew, persp);
+			aiVector3D trans, sca;
+			aiQuaternion rot;
+
+			node->mTransformation.Decompose(sca, rot, trans);
+			rotatonquat = glm::conjugate(rotatonquat);
+			rotation = glm::eulerAngles(rotatonquat);
+			nodeptr->SetRotation(rotation);
+			nodeptr->SetScale(scale);
+			nodeptr->SetTranslation(translate);*/
+			
+			nodeptr->ModelTransform = Transform::aiMatrix4x4ToGlm(&node->mTransformation);
+			cout << endl;
+		};
 		// after we've processed all of the meshes (if any) we then recursively process each of the children nodes
 		for (unsigned int i = 0; i < node->mNumChildren; i++)
-		{
-			processNode(node->mChildren[i], scene);
+		{	
+			childNode->AddChild(processNode(node->mChildren[i], scene, childNode));
 		}
-
+		return childNode;
 	}
 
-	Mesh processMesh(aiMesh *mesh, const aiScene *scene)
+	CGeometryNode* processMesh(aiMesh *mesh, const aiScene *scene)
 	{
+		cout << mesh->mName.C_Str() << endl;
 		// data to fill
 		vector<Vertex> vertices;
 		vector<unsigned int> indices;
 		vector<Texture> textures;
-
+		vertices.reserve(1000);
+		indices.reserve(1000);
+		textures.reserve(50);
 		// Walk through each of the mesh's vertices
 		for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 		{
@@ -151,6 +195,12 @@ private:
 		// diffuse: texture_diffuseN
 		// specular: texture_specularN
 		// normal: texture_normalN
+		auto numTextures = material->GetTextureCount(aiTextureType_DIFFUSE) + material->GetTextureCount(aiTextureType_SPECULAR) + material->GetTextureCount(aiTextureType_HEIGHT);
+		
+		if (numTextures)
+			cout << "Textures: " << numTextures<< endl;
+		else
+			cout <<"Mesh "<< mesh->mName.C_Str() <<"; no textures." << endl;
 
 		// 1. diffuse maps
 		vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
@@ -162,17 +212,19 @@ private:
 		std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
 		textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 		// 4. height maps
-		std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
+		std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_NORMALS, "texture_height");
 		textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
-
+		//CGeometryNode Node(Mesh(vertices, indices, textures, mesh->mName.C_Str()));
 		// return a mesh object created from the extracted mesh data
-		return Mesh(vertices, indices, textures);
+		
+		return new CGeometryNode (Mesh(vertices, indices, textures, mesh->mName.C_Str()));;
 	}
 
 	// checks all material textures of a given type and loads the textures if they're not loaded yet.
 	// the required info is returned as a Texture struct.
 	vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName)
 	{
+		//cout << "Texture count: "<<mat->GetTextureCount(type)<<endl;
 		vector<Texture> textures;
 		for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
 		{
@@ -206,9 +258,12 @@ private:
 
 unsigned int TextureFromFile(const char *path, const string &directory, bool gamma)
 {
+	
+	cout << "Load Texture From Path:" << path << endl;
+
 	string filename = string(path);
 	filename = directory + '/' + filename;
-
+	cout << filename << endl;
 	unsigned int textureID;
 	glGenTextures(1, &textureID);
 

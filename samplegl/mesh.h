@@ -41,12 +41,17 @@ public:
 	vector<Vertex> vertices;
 	vector<unsigned int> indices;
 	vector<Texture> textures;
+	string name;
 	unsigned int VAO;
+	Mesh() {
 
+	}
 	/*  Functions  */
 	// constructor
-	Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures)
+	Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures,string name="Mesh")
 	{
+		//this->vertices.reserve(1000);
+		//this->indices.reserve(1000);
 		this->vertices = vertices;
 		this->indices = indices;
 		this->textures = textures;

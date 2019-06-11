@@ -1,6 +1,6 @@
 #ifndef CAMERA_H
 #define CAMERA_H
-
+#include "Physics.h"
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -24,7 +24,7 @@ const float ZOOM = 45.0f;
 
 
 // An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
-class Camera
+class Camera: public PhysicsObject
 {
 public:
 	// Camera Attributes
@@ -49,6 +49,7 @@ public:
 		Yaw = yaw;
 		Pitch = pitch;
 		updateCameraVectors();
+		PhysicsInit(position);
 	}
 	// Constructor with scalar values
 	Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
@@ -58,8 +59,28 @@ public:
 		Yaw = yaw;
 		Pitch = pitch;
 		updateCameraVectors();
+		PhysicsInit(glm::vec3(posX, posY, posZ));
 	}
+	void PhysicsInit(glm::vec3 Position) {
+		CollisionShape = new btSphereShape(btScalar(1.3));
+		//btCollisionShape* CollisionShape = new btBoxShape(btVector3(btScalar(0.5), btScalar(0.5), btScalar(0.5)));
+		btTransform cameraTransform;
+		cameraTransform.setIdentity();
+		cameraTransform.setOrigin(btVector3(Position.x, Position.y, Position.z));
+		btScalar mass(1.00f);
 
+		bool isDynamic = (mass != 0.1f);
+
+		btVector3 localInertia(0.0f, 0.f, 0.0f);
+		if (isDynamic)
+			CollisionShape->calculateLocalInertia(mass, localInertia);
+
+		btDefaultMotionState* myMotionState = new btDefaultMotionState(cameraTransform);
+		btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, CollisionShape, localInertia);
+		body = new btRigidBody(rbInfo);
+		body->setUserPointer(this);
+		PhysicsProp.getPointer()->getDynamicsWorldPointer()->addRigidBody(body);
+	}
 	// Returns the view matrix calculated using Euler Angles and the LookAt Matrix
 	glm::mat4 GetViewMatrix()
 	{
@@ -127,5 +148,6 @@ private:
 		Right = glm::normalize(glm::cross(Front, WorldUp));  // Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
 		Up = glm::normalize(glm::cross(Right, Front));
 	}
+	Physics PhysicsProp;
 };
 #endif

@@ -41,7 +41,7 @@ private:
 
 	static std::string getPathRelativeBinary(const std::string& path)
 	{
-		return "../../../" + path;
+		return "../" + path;
 	}
 
 

@@ -6,6 +6,7 @@ in    vec2 TexCoords;
 in    vec3 TangentLightPos;
 in    vec3 TangentViewPos;
 in    vec3 TangentFragPos;
+in    vec3 Norm;
 
 uniform vec3 lightPos;
 uniform vec3 lightColor;
@@ -20,11 +21,14 @@ uniform sampler2D texture_normal1;
 
 void main()
 {   
-	//float depth = LinearizeDepth(gl_FragCoord.z) / far;
+	float depth = gl_FragCoord.z / 10;
 
-    vec3 normal = texture(texture_normal1, TexCoords).rgb;
+    //vec3 normal = texture(texture_normal1, TexCoords).rgb;
+	vec3 normal = Norm;
 
-    normal = normalize(normal * 2.0 - 1.0);
+    //normal = normalize(normal * 2.0 - 1.0);
+
+	normal = normalize(normal);
 
     vec3 color =texture(texture_diffuse1, TexCoords).rgb;
 
@@ -39,9 +43,9 @@ void main()
     vec3 reflectDir = reflect(-lightDir, normal);
     vec3 halfwayDir = normalize(lightDir + viewDir);  
     float spec = pow(max(dot(normal, halfwayDir), 0.0), 128);
-    vec3 specular = vec3(1.01) * spec * texture(texture_specular1, TexCoords).rgb;
+    vec3 specular = vec3(0.2) * spec * texture(texture_specular1, TexCoords).rgb;
     
 	
-	FragColor = vec4(color, 1.0);
-	//FragColor = vec4((ambient + diffuse + specular)*lightColor, 1.0);
+	//FragColor = vec4(vec3((2 * 0.1) / (300 + 0.1 - gl_FragCoord.z * (300 - 0.1))), 1.0);
+	FragColor = vec4((ambient + diffuse + specular)*lightColor, 1.0);
 }
